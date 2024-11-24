@@ -9,6 +9,144 @@ The simple RAG application written in Python and it also a web application that 
 - Choose from different response styles for answers.
 - View sources and relevance scores for each response.
 
+## Architecture
+
+### Overall System Flow
+
+```mermaid
+graph TB
+    subgraph Frontend
+        UI[Web Interface]
+        Upload[Upload Component]
+        Query[Query Component]
+        Response[Response Display]
+    end
+
+    subgraph Backend["Backend (Flask Server)"]
+        API[Flask API]
+        IndexService[Index Service]
+        DocLoader[Document Loader]
+        Storage[Storage Context]
+    end
+
+    subgraph Models
+        LLM[Language Models]
+        EMB[Embedding Models]
+    end
+
+    subgraph Storage
+        VS[(Vector Store)]
+        DS[(Document Store)]
+    end
+
+    %% Frontend Flow
+    UI --> Upload
+    UI --> Query
+    UI --> Response
+
+    %% Upload Flow
+    Upload -->|POST /upload| API
+    API -->|Process Files| DocLoader
+    DocLoader -->|Create Index| IndexService
+    IndexService -->|Store Vectors| VS
+    IndexService -->|Store Documents| DS
+
+    %% Query Flow
+    Query -->|POST /query| API
+    API -->|Process Query| IndexService
+    IndexService -->|Retrieve Context| VS
+    IndexService -->|Get Documents| DS
+    IndexService -->|Generate Embedding| EMB
+    IndexService -->|Generate Response| LLM
+    IndexService -->|Return Response| Response
+```
+
+### Query Process Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Flask
+    participant IndexService
+    participant VectorStore
+    participant LLM
+
+    User->>Frontend: Enter Question
+    Frontend->>Flask: POST /query
+    Flask->>IndexService: Process Query
+    IndexService->>VectorStore: Retrieve Similar Documents
+    VectorStore-->>IndexService: Return Relevant Chunks
+    IndexService->>LLM: Generate Response
+    LLM-->>IndexService: Return Response
+    IndexService-->>Flask: Format Response
+    Flask-->>Frontend: JSON Response
+    Frontend->>User: Display Answer & Sources
+```
+
+### Component Architecture
+
+```mermaid
+graph TB
+    subgraph "Frontend Components"
+        direction TB
+        HTML[index.html]
+        JS[JavaScript]
+        Bootstrap[Bootstrap UI]
+    end
+
+    subgraph "Backend Services"
+        direction TB
+        Flask[Flask Server]
+        IndexService[Index Service]
+        LLMService[LLM Service]
+        DocumentLoader[Document Loader]
+    end
+
+    subgraph "External Services"
+        direction TB
+        OpenAI[OpenAI API]
+        Groq[Groq API]
+        Gemini[Gemini API]
+        Ollama[Ollama API]
+    end
+
+    subgraph "Storage"
+        direction TB
+        VectorStore[FAISS Vector Store]
+        DocStore[Document Store]
+    end
+
+    %% Connections
+    HTML --> Flask
+    JS --> Flask
+    Flask --> IndexService
+    IndexService --> DocumentLoader
+    IndexService --> LLMService
+    IndexService --> VectorStore
+    IndexService --> DocStore
+    LLMService --> OpenAI
+    LLMService --> Groq
+    LLMService --> Gemini
+    LLMService --> Ollama
+```
+
+The diagrams above illustrate:
+
+1. **Overall System Flow**: Shows how the frontend interacts with the backend services and how data flows through the system during document upload and querying.
+
+2. **Query Process Flow**: Details the sequence of operations that occur when a user submits a question, from frontend to backend and back.
+
+3. **Component Architecture**: Displays the relationship between different components of the system, including frontend, backend services, external APIs, and storage systems.
+
+Key components:
+
+- Frontend web interface with upload and query capabilities
+- Flask backend server handling API requests
+- Index Service managing document processing and retrieval
+- Multiple LLM providers (OpenAI, Groq, Gemini, Ollama)
+- Vector and Document storage systems
+
 ## Installation
 
 ### Prerequisites
@@ -77,8 +215,6 @@ The `config.py` file is crucial for setting up the environment and configuring t
 ### Customization
 
 You can modify the `config.py` file to change the behavior of the application, such as switching between different language models or adjusting document processing parameters.
-
-## Architecture
 
 ### Overall System Flow
 
