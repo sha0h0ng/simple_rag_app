@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Banking Document Assistant</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
+    />
+    <style>
+      .drop-zone {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+      .drop-zone.dragover {
+        border-color: #0d6efd;
+        background-color: #f8f9fa;
+      }
+      .template-description {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <div class="container py-5">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="card-title mb-4">Banking Document Assistant</h1>
+
+          <!-- Upload Section -->
+          <div class="mb-4">
+            <h5 class="mb-3">
+              <i class="bi bi-upload me-2"></i>Upload Documents
+            </h5>
+            <div id="dropZone" class="drop-zone p-5 text-center mb-3">
+              <input
+                type="file"
+                id="fileInput"
+                class="d-none"
+                multiple
+                accept=".pdf,.txt,.json"
+              />
+              <i class="bi bi-cloud-arrow-up display-4 mb-3 text-primary"></i>
+              <p class="mb-2">Drag & drop files here or</p>
+              <button
+                onclick="document.getElementById('fileInput').click()"
+                class="btn btn-primary"
+              >
+                Browse Files
+              </button>
+              <p class="text-muted small mt-2">
+                Supports PDF, TXT, and JSON files
+              </p>
+            </div>
+            <div id="fileList" class="list-group mb-3"></div>
+            <button
+              onclick="uploadFiles()"
+              id="uploadButton"
+              class="btn btn-success d-none"
+            >
+              <i class="bi bi-arrow-up-circle me-2"></i>Upload Selected Files
+            </button>
+          </div>
+
+          <!-- Query Section -->
+          <div class="mb-4">
+            <h5 class="mb-3">
+              <i class="bi bi-chat-dots me-2"></i>Ask a Question
+            </h5>
+            <div class="mb-3">
+              <label for="templateType" class="form-label"
+                >Response Style</label
+              >
+              <select id="templateType" class="form-select mb-2">
+                <option value="default">Standard Response</option>
+                <option value="professional">Professional Analysis</option>
+                <option value="concise">Concise Answer</option>
+                <option value="step_by_step">Step by Step Explanation</option>
+                <option value="bank_teller">Bank Teller Style</option>
+              </select>
+              <div id="templateHelp" class="template-description">
+                Choose how you want the answer to be formatted
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="questionInput" class="form-label"
+                >Your Question</label
+              >
+              <textarea
+                id="questionInput"
+                class="form-control"
+                rows="3"
+                placeholder="Enter your question about the banking documents..."
+              ></textarea>
+            </div>
+            <button onclick="submitQuery()" class="btn btn-primary">
+              <i class="bi bi-send me-2"></i>Ask Question
+            </button>
+          </div>
+
+          <!-- Response Section -->
+          <div id="response" class="d-none">
+            <h5 class="mb-3">
+              <i class="bi bi-chat-left-text me-2"></i>Response
+            </h5>
+            <div id="responseContent" class="card mb-4">
+              <div class="card-body"></div>
+            </div>
+
+            <h6 class="mb-3"><i class="bi bi-journals me-2"></i>Sources</h6>
+            <div id="sourcesList" class="mb-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('fileInput');
+      const fileList = document.getElementById('fileList');
+      const uploadButton = document.getElementById('uploadButton');
+      const templateSelect = document.getElementById('templateType');
+      let files = [];
+
+      // Template descriptions
+      const templateDescriptions = {
+        default: 'Standard comprehensive response based on the documents',
+        professional: 'Detailed analysis with professional terminology',
+        concise: 'Brief and direct answer to your question',
+        step_by_step: 'Structured explanation broken down into steps',
+        bank_teller: "Friendly response in a bank teller's style",
+      };
+
+      templateSelect.addEventListener('change', function () {
+        document.getElementById('templateHelp').textContent =
+          templateDescriptions[this.value] ||
+          'Choose how you want the answer to be formatted';
+      });
+
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((eventName) => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+      });
+
+      ['dragenter', 'dragover'].forEach((eventName) => {
+        dropZone.addEventListener(
+          eventName,
+          () => dropZone.classList.add('dragover'),
+          false
+        );
+      });
+
+      ['dragleave', 'drop'].forEach((eventName) => {
+        dropZone.addEventListener(
+          eventName,
+          () => dropZone.classList.remove('dragover'),
+          false
+        );
+      });
+
+      dropZone.addEventListener('drop', handleDrop, false);
+      fileInput.addEventListener('change', handleFiles, false);
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      function handleDrop(e) {
+        files = [...e.dataTransfer.files];
+        handleFiles({ target: { files: files } });
+      }
+
+      function handleFiles(e) {
+        files = [...e.target.files];
+        updateFileList();
+      }
+
+      function updateFileList() {
+        fileList.innerHTML = files
+          .map(
+            (file) => `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-file-earmark-text me-2"></i>
+                        ${file.name}
+                    </div>
+                    <span class="badge bg-secondary">${formatFileSize(
+                      file.size
+                    )}</span>
+                </div>
+            `
+          )
+          .join('');
+        uploadButton.classList.toggle('d-none', files.length === 0);
+      }
+
+      function formatFileSize(bytes) {
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        if (bytes === 0) return '0 Bytes';
+        const i = Math.floor(Math.log(bytes) / Math.log(1024));
+        return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
+      }
+
+      async function uploadFiles() {
+        const formData = new FormData();
+        files.forEach((file) => formData.append('files[]', file));
+
+        try {
+          uploadButton.disabled = true;
+          uploadButton.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
+
+          const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const result = await response.json();
+          if (result.status === 'success') {
+            showAlert(
+              'success',
+              `Successfully uploaded ${result.documents_processed} documents`
+            );
+            files = [];
+            updateFileList();
+          } else {
+            showAlert('danger', `Error: ${result.error}`);
+          }
+        } catch (error) {
+          showAlert('danger', 'Error uploading files: ' + error);
+        } finally {
+          uploadButton.disabled = false;
+          uploadButton.innerHTML =
+            '<i class="bi bi-arrow-up-circle me-2"></i>Upload Selected Files';
+        }
+      }
+
+      async function submitQuery() {
+        const question = document.getElementById('questionInput').value;
+        const templateType = document.getElementById('templateType').value;
+        const responseDiv = document.getElementById('response');
+        const responseContent = document
+          .getElementById('responseContent')
+          .querySelector('.card-body');
+        const sourcesList = document.getElementById('sourcesList');
+
+        if (!question.trim()) {
+          showAlert('warning', 'Please enter a question');
+          return;
+        }
+
+        try {
+          const submitBtn = document.querySelector(
+            'button[onclick="submitQuery()"]'
+          );
+          submitBtn.disabled = true;
+          submitBtn.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+
+          const response = await fetch('/query', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              question: question,
+              template_type: templateType,
+              top_k: 3,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.error) {
+            showAlert('danger', data.error);
+            return;
+          }
+
+          responseDiv.classList.remove('d-none');
+          responseContent.innerHTML = `<p class="mb-0">${data.response}</p>`;
+
+          sourcesList.innerHTML = data.source_nodes
+            .map(
+              (node) => `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <p class="mb-2">${node.text}</p>
+                            <div class="d-flex justify-content-between align-items-center small text-muted">
+                                <span><i class="bi bi-graph-up me-1"></i>Relevance Score: ${node.score.toFixed(
+                                  3
+                                )}</span>
+                                ${
+                                  node.metadata?.source
+                                    ? `
+                                    <span><i class="bi bi-file-text me-1"></i>Source: ${node.metadata.source}</span>
+                                `
+                                    : ''
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `
+            )
+            .join('');
+
+          responseDiv.scrollIntoView({ behavior: 'smooth' });
+        } catch (error) {
+          showAlert('danger', 'Error querying: ' + error);
+        } finally {
+          const submitBtn = document.querySelector(
+            'button[onclick="submitQuery()"]'
+          );
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="bi bi-send me-2"></i>Ask Question';
+        }
+      }
+
+      function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+                <i class="bi ${
+                  type === 'success'
+                    ? 'bi-check-circle'
+                    : 'bi-exclamation-triangle'
+                } me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+        document
+          .querySelector('.card-body')
+          .insertBefore(alertDiv, document.querySelector('.mb-4'));
+
+        setTimeout(() => {
+          alertDiv.classList.remove('show');
+          setTimeout(() => alertDiv.remove(), 150);
+        }, 5000);
+      }
+    </script>
+  </body>
+</html>
