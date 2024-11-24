@@ -216,67 +216,6 @@ The `config.py` file is crucial for setting up the environment and configuring t
 
 You can modify the `config.py` file to change the behavior of the application, such as switching between different language models or adjusting document processing parameters.
 
-```mermaid
-graph TB
-    subgraph "Frontend Components"
-        direction TB
-        HTML[index.html]
-        JS[JavaScript]
-        Bootstrap[Bootstrap UI]
-    end
-
-    subgraph "Backend Services"
-        direction TB
-        Flask[Flask Server]
-        IndexService[Index Service]
-        LLMService[LLM Service]
-        DocumentLoader[Document Loader]
-    end
-
-    subgraph "External Services"
-        direction TB
-        OpenAI[OpenAI API]
-        Groq[Groq API]
-        Gemini[Gemini API]
-        Ollama[Ollama API]
-    end
-
-    subgraph "Storage"
-        direction TB
-        VectorStore[FAISS Vector Store]
-        DocStore[Document Store]
-    end
-
-    %% Connections
-    HTML --> Flask
-    JS --> Flask
-    Flask --> IndexService
-    IndexService --> DocumentLoader
-    IndexService --> LLMService
-    IndexService --> VectorStore
-    IndexService --> DocStore
-    LLMService --> OpenAI
-    LLMService --> Groq
-    LLMService --> Gemini
-    LLMService --> Ollama
-```
-
-The diagrams above illustrate:
-
-1. **Overall System Flow**: Shows how the frontend interacts with the backend services and how data flows through the system during document upload and querying.
-
-2. **Query Process Flow**: Details the sequence of operations that occur when a user submits a question, from frontend to backend and back.
-
-3. **Component Architecture**: Displays the relationship between different components of the system, including frontend, backend services, external APIs, and storage systems.
-
-Key components:
-
-- Frontend web interface with upload and query capabilities
-- Flask backend server handling API requests
-- Index Service managing document processing and retrieval
-- Multiple LLM providers (OpenAI, Groq, Gemini, Ollama)
-- Vector and Document storage systems
-
 ## Usage
 
 1. Start the application by running `python app.py`.
