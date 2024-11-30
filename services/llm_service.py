@@ -20,6 +20,7 @@ from config import (
     GROQ_MODEL,
     OLLAMA_MODEL
 )
+import ollama
 
 
 class BaseLLM(ABC):
@@ -101,11 +102,11 @@ class OllamaLLM(BaseLLM):
         self.model = OLLAMA_MODEL
 
     def complete(self, prompt: str) -> str:
-        response = self.client.chat.completions.create(
+        response = ollama.chat(
             model=self.model,
             messages=[{"role": "user", "content": prompt}]
         )
-        return response.choices[0].message.content
+        return response['message']['content']
 
     def to_llamaindex_llm(self):
         return Ollama(model=self.model)

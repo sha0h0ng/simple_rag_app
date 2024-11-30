@@ -11,12 +11,12 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", DUMMY_API_KEY)
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", DUMMY_API_KEY)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", DUMMY_API_KEY)
 
-LLM_PROVIDER = "ollama"
+LLM_PROVIDER = "openai"
 EMBEDDING_PROVIDER = "ollama"
 
 # Document Processing Settings OpenAI Embedding Model
-CHUNK_SIZE = 1024
-CHUNK_OVERLAP = 200
+CHUNK_SIZE = 400
+CHUNK_OVERLAP = 100
 EMBEDDING_BATCH_SIZE = 100
 
 # Embedding Model (Uncomment the desired model)
@@ -82,7 +82,7 @@ Step-by-step response:
 1."""
 
 BANK_TELLER_TEMPLATE = """Act as a helpful bank teller and your name is GenBot. Use the provided context to assist the customer with their banking query.
-And please do not use any markdown formatting in your response. And also make it short and concise and if possible less than 50 words.
+And please do not use any markdown formatting in your response. And also make it short and concise and if possible less than 30 words.
 
 Context:
 ---------------
