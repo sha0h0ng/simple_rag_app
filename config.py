@@ -11,8 +11,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", DUMMY_API_KEY)
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", DUMMY_API_KEY)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", DUMMY_API_KEY)
 
-LLM_PROVIDER = "openai"
-EMBEDDING_PROVIDER = "ollama"
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", DUMMY_API_KEY)
+EMBEDDING_PROVIDER = os.getenv("EMBEDDING_PROVIDER", DUMMY_API_KEY)
 
 # Document Processing Settings OpenAI Embedding Model
 CHUNK_SIZE = 400
@@ -22,14 +22,15 @@ EMBEDDING_BATCH_SIZE = 100
 # Embedding Model (Uncomment the desired model)
 # EMBEDDING_MODEL = "text-embedding-3-small"  # OpenAI Embedding Model
 # EMBEDDING_MODEL = "fake"  # Fake Embedding Model
-EMBEDDING_MODEL = "llama3.2:latest"  # Ollama Embedding Model
+# EMBEDDING_MODEL = "llama3.2:latest"  # Ollama Embedding Model
 # EMBEDDING_MODEL = "BAAI/bge-small-en"  # HuggingFace Embedding Model
+EMBEDDING_MODEL = os.getenv("EMBEDDING_PROVIDER", "fake")
 
 # LLM Model
-OPENAI_MODEL = "gpt-4o-mini"
-GEMINI_MODEL = "models/gemini-1.5-flash"
-GROQ_MODEL = "mixtral-8x7b-32768"
-OLLAMA_MODEL = "llama3.2:latest"
+OPENAI_MODEL = os.getenv("OPENAI_MODEL")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL")
+GROQ_MODEL = os.getenv("GROQ_MODEL")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
 
 # QA Templates
 DEFAULT_QA_TEMPLATE = """Use the provided context to answer the question and do not use any markdown formatting in your response. Be clear and comprehensive.
